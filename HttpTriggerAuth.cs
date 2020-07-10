@@ -28,14 +28,21 @@ namespace PmtDadJokes
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var data = JsonSerializer.Deserialize<AuthModel>(requestBody);
-            var bytes = Convert.FromBase64String(data.Pwd);
-            var encoded = ASCIIEncoding.ASCII.GetString(bytes);
-            log.LogInformation($"Body of request: {data.UserId}");
-            var isAuthenticated = encoded == Environment.GetEnvironmentVariable("Pwd");
-            return new OkObjectResult(isAuthenticated);
+            try
+            {
+                log.LogInformation("C# HTTP trigger function processed a request.");
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                var data = JsonSerializer.Deserialize<AuthModel>(requestBody);
+                var bytes = Convert.FromBase64String(data.Pwd);
+                var encoded = ASCIIEncoding.ASCII.GetString(bytes);
+                log.LogInformation($"Body of request: {data.UserId}");
+                var isAuthenticated = encoded == Environment.GetEnvironmentVariable("Pwd");
+                return new OkObjectResult(isAuthenticated);
+            }
+            catch (Exception ex)
+            {
+                return new BadRequestObjectResult(ex);
+            }
         }
     }
 }
